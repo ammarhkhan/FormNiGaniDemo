@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "610832098605",
+    "project_id": "form-ni-gani-8052f",
+    "storage_bucket": "form-ni-gani-8052f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:610832098605:android:e0b0f77e67065cadad9fa4",
+        "android_client_info": {
+          "package_name": "com.example.formniganidemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWNf7P_taMbhRFCoMBduMmepKRvvLA2VY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
