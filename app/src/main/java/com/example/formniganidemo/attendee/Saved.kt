@@ -101,6 +101,27 @@ fun SavedEventScreen(
             BottomSheetDefaults.DragHandle(color = Color.LightGray)
         },
         sheetContent = {
+            Column(
+                modifier = Modifier.padding(
+                    start = 24.dp,
+                    end = 24.dp,
+                    top = 24.dp,
+                    bottom = 20.dp
+                )
+            ) {
+                Text(
+                    text = "Saved",
+                    color = Color(0xFF0D3B36),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 26.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${savedEvents.size} saved events in Nairobi",
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
             // 2-Column Grid of Saved Events inside the draggable drawer
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -203,36 +224,36 @@ fun SavedEventScreen(
             }
 
             // 2. Floating Wishlist Header Title
-            Surface(
-                color = Color.White.copy(alpha = 0.95f),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter),
-                shadowElevation = 2.dp,
-                shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(
-                        start = 24.dp,
-                        end = 24.dp,
-                        top = 64.dp,
-                        bottom = 20.dp
-                    )
-                ) {
-                    Text(
-                        text = "Saved",
-                        color = Color(0xFF0D3B36),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 26.sp
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "${savedEvents.size} saved events in Nairobi",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
+//            Surface(
+//                color = Color.White.copy(alpha = 0.95f),
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .align(Alignment.TopCenter),
+//                shadowElevation = 2.dp,
+//                shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+//            ) {
+//                Column(
+//                    modifier = Modifier.padding(
+//                        start = 24.dp,
+//                        end = 24.dp,
+//                        top = 64.dp,
+//                        bottom = 20.dp
+//                    )
+//                ) {
+//                    Text(
+//                        text = "Saved",
+//                        color = Color(0xFF0D3B36),
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 26.sp
+//                    )
+//                    Spacer(modifier = Modifier.height(2.dp))
+//                    Text(
+//                        text = "${savedEvents.size} saved events in Nairobi",
+//                        fontSize = 12.sp,
+//                        color = Color.Gray
+//                    )
+//                }
+//            }
         }
     }
 }
