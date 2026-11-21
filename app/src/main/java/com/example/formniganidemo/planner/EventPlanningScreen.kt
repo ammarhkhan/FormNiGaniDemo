@@ -65,6 +65,19 @@ fun EventPlanningScreen() {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
 
+    fun resetForm() {
+        title = ""
+        description = ""
+        datetime = ""
+        price = ""
+        category = categories.first()
+        isCategoryExpanded = false
+        locationInput = ""
+        predictions = emptyList()
+        selectedLatLng = null
+        imageUri = null
+    }
+
     // Query Google Places as the user types
     fun searchPlaces(query: String) {
         if (query.length < 2) {
@@ -139,8 +152,12 @@ fun EventPlanningScreen() {
             docRef.set(eventMap)
                 .addOnSuccessListener {
                     isLoading = false
-                    val msg = if (status == "draft") "Draft saved successfully!" else "Event published successfully!"
-                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                    if (status == "published") {
+                        resetForm()
+                        Toast.makeText(context, "Event published successfully!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Draft saved successfully!", Toast.LENGTH_SHORT).show()
+                    }
                 }
                 .addOnFailureListener { e ->
                     isLoading = false
