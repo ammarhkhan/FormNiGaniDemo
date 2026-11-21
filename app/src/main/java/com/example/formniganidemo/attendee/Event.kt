@@ -1,5 +1,6 @@
 package com.example.formniganidemo.attendee
 
+import android.location.Geocoder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,18 +32,53 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.formniganidemo.R
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.util.Locale
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.withContext
+
 
 @Composable
 fun EventCard(
@@ -123,7 +159,71 @@ fun EventDetailScreen(
     event: EventDetailData,
     onBackClick: () -> Unit
 ) {
+    val context = LocalContext.current
     val deepTeal = Color(0xFF0D3B36)
+
+    // Resolve coordinates (use Firestore lat/lng if present, otherwise geocode the address)
+    var resolvedLatLng by remember(event.id, event.latitude, event.longitude, event.location) {
+        mutableStateOf(
+            if (event.latitude != 0.0 || event.longitude != 0.0) {
+                LatLng(event.latitude, event.longitude)
+            } else {
+                null
+            }
+        )
+    }
+
+    LaunchedEffect(event.location, event.latitude, event.longitude) {
+        if (resolvedLatLng == null && event.location.isNotBlank()) {
+            val geocoded = withContext(Dispatchers.IO) {
+                try {
+                    @Suppress("DEPRECATION")
+                    val results = Geocoder(context, Locale.getDefault())
+                        .getFromLocationName(event.location, 1)
+                    results?.firstOrNull()?.let { LatLng(it.latitude, it.longitude) }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            if (geocoded != null) {
+                resolvedLatLng = geocoded
+            }
+        }
+    }
+
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            resolvedLatLng ?: LatLng(-1.286389, 36.817223),
+            15f
+        )
+    }
+
+    LaunchedEffect(resolvedLatLng) {
+        resolvedLatLng?.let { target ->
+            cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(target, 15f))
+        }
+    }
+
+    fun openInGoogleMaps() {
+        val query = Uri.encode(event.location.ifBlank { event.title })
+        val geoUri = if (resolvedLatLng != null) {
+            Uri.parse("geo:${resolvedLatLng!!.latitude},${resolvedLatLng!!.longitude}?q=$query")
+        } else {
+            Uri.parse("geo:0,0?q=$query")
+        }
+
+        val mapsIntent = Intent(Intent.ACTION_VIEW, geoUri).apply {
+            setPackage("com.google.android.apps.maps")
+        }
+
+        if (mapsIntent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(mapsIntent)
+        } else {
+            // Fallback to browser if Google Maps app isn't installed
+            val webUri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query")
+            context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -272,6 +372,7 @@ fun EventDetailScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
+                                // Date & Price Card
                                 Card(
                                     shape = RoundedCornerShape(12.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -315,6 +416,7 @@ fun EventDetailScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
+                                // Event Description Card
                                 Card(
                                     shape = RoundedCornerShape(12.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -322,37 +424,121 @@ fun EventDetailScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                Text(
-                                                    "Event Description",
-                                                    fontSize = 11.sp,
-                                                    color = Color.Gray,
-                                                    fontWeight = FontWeight.Bold
+                                        Text(
+                                            "Event Description",
+                                            fontSize = 11.sp,
+                                            color = Color.Gray,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = event.description.ifBlank { "No description provided for this event." },
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+
+                                // Clickable Google Map Card
+                                if (event.location.isNotBlank() || resolvedLatLng != null) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+
+                                    Card(
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                                        elevation = CardDefaults.cardElevation(1.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Column {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(170.dp)
+                                            ) {
+                                                GoogleMap(
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    cameraPositionState = cameraPositionState,
+                                                    uiSettings = MapUiSettings(
+                                                        zoomControlsEnabled = false,
+                                                        scrollGesturesEnabled = false,
+                                                        zoomGesturesEnabled = false,
+                                                        tiltGesturesEnabled = false,
+                                                        rotationGesturesEnabled = false,
+                                                        mapToolbarEnabled = false
+                                                    )
+                                                ) {
+                                                    resolvedLatLng?.let { pin ->
+                                                        Marker(
+                                                            state = MarkerState(position = pin),
+                                                            title = event.title,
+                                                            snippet = event.location
+                                                        )
+                                                    }
+                                                }
+
+                                                // Transparent click overlay so tapping anywhere on the map opens Google Maps
+                                                Box(
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .clickable { openInGoogleMaps() }
                                                 )
-                                                Spacer(modifier = Modifier.height(4.dp))
-                                                Text(
-                                                    text = event.description.ifBlank { "No description provided for this event." },
-                                                    fontSize = 13.sp,
-                                                    fontWeight = FontWeight.Medium
-                                                )
+
+                                                Surface(
+                                                    color = Color.White.copy(alpha = 0.95f),
+                                                    shape = RoundedCornerShape(20.dp),
+                                                    shadowElevation = 4.dp,
+                                                    modifier = Modifier
+                                                        .align(Alignment.BottomEnd)
+                                                        .padding(10.dp)
+                                                ) {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.OpenInNew,
+                                                            contentDescription = null,
+                                                            tint = deepTeal,
+                                                            modifier = Modifier.size(14.dp)
+                                                        )
+                                                        Spacer(modifier = Modifier.width(4.dp))
+                                                        Text(
+                                                            text = "Open in Maps",
+                                                            fontSize = 11.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = deepTeal
+                                                        )
+                                                    }
+                                                }
+                                            }
+
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable { openInGoogleMaps() }
+                                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = "LOCATION",
+                                                        fontSize = 11.sp,
+                                                        color = Color.Gray,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Text(
+                                                        text = event.location.ifBlank { "View on Google Maps" },
+                                                        fontSize = 13.sp,
+                                                        fontWeight = FontWeight.Medium,
+                                                        color = Color.Black
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                //Todo: Add organizer info
-//                                if (event.organizer.isNotBlank()) {
-//                                    Spacer(modifier = Modifier.height(16.dp))
-//                                    Text("Organizer", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-//                                    Spacer(modifier = Modifier.height(4.dp))
-//                                    Text(text = event.organizer, fontSize = 14.sp, color = Color.Gray)
-//                                }
 
                                 Spacer(modifier = Modifier.height(40.dp))
                             }
