@@ -274,19 +274,47 @@ fun EventDetailScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                Text("Event Description", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Join us for an unforgettable night of electronic music featuring top DJs from across East Africa! Gates open at 6:30 PM. Licensed bar and food stalls available. 18+ event.",
-                                    fontSize = 14.sp,
-                                    color = Color.DarkGray,
-                                    lineHeight = 20.sp
-                                )
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(1.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Column {
+                                                Text("Event Description", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                                Text(
+                                                    text = "Join us for an unforgettable night of electronic music featuring top DJs from across East Africa! Gates open at 6:30 PM. Licensed bar and food stalls available. 18+ event.",
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Medium,
+                                                    lineHeight = 20.sp
+                                                )                                            }
+                                        }
+                                    }
+                                }
 
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text("Lineup Highlights", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text("DJ Khaligraph, Nviiri The Storyteller, Bensoul, Fena Gitu, Ayrosh", fontSize = 14.sp, color = Color.Gray)
+
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    elevation = CardDefaults.cardElevation(1.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Column {
+                                                Text("Lineup Highlights", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                                Text(
+                                                    text = "DJ Khaligraph, Nviiri The Storyteller, Bensoul, Fena Gitu, Ayrosh",
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Medium,
+                                                    lineHeight = 20.sp
+                                                )                                            }
+                                        }
+                                    }
+                                }
 
                                 Spacer(modifier = Modifier.height(40.dp))
                             }
