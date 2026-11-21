@@ -34,7 +34,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!Places.isInitialized()) {
-            Places.initializeWithNewPlacesApiEnabled(applicationContext, "AIzaSyAWVGBPU8Z4oxxR16O-DuQe1rs2aVkerOg")
+            Places.initializeWithNewPlacesApiEnabled(
+                applicationContext,
+                "AIzaSyAWVGBPU8Z4oxxR16O-DuQe1rs2aVkerOg")
         }
         setContent {
             FormNiGaniTheme {

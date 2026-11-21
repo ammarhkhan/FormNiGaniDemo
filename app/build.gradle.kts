@@ -56,7 +56,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
     implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("com.google.android.libraries.places:places:3.3.0")
+    implementation("com.google.android.libraries.places:places:4.3.1")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.compose.material3:material3")
     implementation("androidx.appcompat:appcompat:1.6.1") // or latest stable version
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
