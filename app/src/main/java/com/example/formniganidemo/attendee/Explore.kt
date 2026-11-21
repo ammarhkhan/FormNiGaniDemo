@@ -68,6 +68,7 @@ data class NearbyPresetLocation(
 data class ExploreEventItem(
     val id: String = "",
     val title: String = "",
+    val imageUri: String = "",
     val datetime: String = "",
     val location: String = "",
     val organizer: String = "",
@@ -141,6 +142,7 @@ fun ExploreScreen(
                     ExploreEventItem(
                         id = doc.getString("id") ?: doc.id,
                         title = title,
+                        imageUri = doc.getString("imageUri") ?: doc.getString("imageUrl").orEmpty(),
                         datetime = doc.getString("datetime").orEmpty(),
                         location = doc.getString("location").orEmpty(),
                         organizer = doc.getString("organizer").orEmpty(),
@@ -429,6 +431,7 @@ fun ExploreScreen(
                         location = locationDisplay,
                         organizer = organizerDisplay,
                         price = event.price,
+                        imageUri = event.imageUri,
                         onClick = { onEventClick(event.title) }
                     )
                 }

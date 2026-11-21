@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -36,14 +34,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.formniganidemo.R
 
 @Composable
-fun EventCard(title: String, datetime: String, location: String, organizer: String, price: String, onClick: () -> Unit) {
+fun EventCard(
+    title: String,
+    datetime: String,
+    location: String,
+    organizer: String,
+    price: String,
+    imageUri: String? = null,
+    onClick: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -59,11 +69,14 @@ fun EventCard(title: String, datetime: String, location: String, organizer: Stri
                     .height(140.dp)
                     .background(Color.LightGray)
             ) {
-                androidx.compose.foundation.Image(
-                    painter = androidx.compose.ui.res.painterResource(id = R.drawable.central_park_nairobi),
-                    contentDescription = "Central Park Nairobi",
+                AsyncImage(
+                    model = imageUri?.takeIf { it.isNotBlank() },
+                    contentDescription = title,
+                    placeholder = painterResource(id = R.drawable.central_park_nairobi),
+                    error = painterResource(id = R.drawable.central_park_nairobi),
+                    fallback = painterResource(id = R.drawable.central_park_nairobi),
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    contentScale = ContentScale.Crop
                 )
                 Surface(
                     color = Color(0xFFE67E22),
@@ -94,7 +107,8 @@ fun EventCard(title: String, datetime: String, location: String, organizer: Stri
                             .background(Color(0xFF0D3B36)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("J", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        val initial = organizer.firstOrNull()?.uppercase() ?: "E"
+                        Text(initial, color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(text = organizer, fontSize = 12.sp, fontWeight = FontWeight.Medium)
@@ -105,7 +119,11 @@ fun EventCard(title: String, datetime: String, location: String, organizer: Stri
 }
 
 @Composable
-fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
+fun EventDetailScreen(
+    eventTitle: String,
+    imageUri: String? = null,
+    onBackClick: () -> Unit
+) {
     Scaffold(
         bottomBar = {
             Surface(
@@ -132,8 +150,6 @@ fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
             }
         }
     ) { innerPadding ->
-        // Use a Box here so the LazyColumn can draw behind the status bar from pixel 0,
-        // while safely respecting the bottom bar height via innerPadding.
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -141,8 +157,6 @@ fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
         ) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                // Pass ONLY the bottom padding so the list items don't hide behind the bottom button bar.
-                // We omit top padding entirely so the header image goes all the way to the top!
                 contentPadding = PaddingValues(bottom = innerPadding.calculateBottomPadding()),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
@@ -150,18 +164,21 @@ fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
                     Box(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        // 1. Header Image Background (Stretches flush to the top edge)
+                        // 1. Header Image Background
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(264.dp)
                                 .background(Color(0xFF0D3B36))
                         ) {
-                            androidx.compose.foundation.Image(
-                                painter = androidx.compose.ui.res.painterResource(id = R.drawable.central_park_nairobi),
-                                contentDescription = "Central Park Nairobi",
+                            AsyncImage(
+                                model = imageUri?.takeIf { it.isNotBlank() },
+                                contentDescription = eventTitle,
+                                placeholder = painterResource(id = R.drawable.central_park_nairobi),
+                                error = painterResource(id = R.drawable.central_park_nairobi),
+                                fallback = painterResource(id = R.drawable.central_park_nairobi),
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                contentScale = ContentScale.Crop
                             )
 
                             // Dark gradient overlay
@@ -169,7 +186,7 @@ fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(
-                                        androidx.compose.ui.graphics.Brush.verticalGradient(
+                                        Brush.verticalGradient(
                                             colors = listOf(
                                                 Color.Black.copy(alpha = 0.5f),
                                                 Color.Transparent,
@@ -179,7 +196,7 @@ fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
                                     )
                             )
 
-                            // Back Button (Safely padded below the phone's status bar)
+                            // Back Button
                             IconButton(
                                 onClick = onBackClick,
                                 modifier = Modifier
@@ -213,13 +230,12 @@ fun EventDetailScreen(eventTitle: String, onBackClick: () -> Unit) {
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 240.dp), // Perfectly overlaps the bottom of the header image
+                                .padding(top = 240.dp),
                             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
                             color = Color(0xFFF8F9FA),
                             shadowElevation = 0.dp
                         ) {
                             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
-                                // Drag handle
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.CenterHorizontally)
