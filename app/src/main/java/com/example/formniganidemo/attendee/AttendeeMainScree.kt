@@ -3,7 +3,6 @@ package com.example.formniganidemo.attendee
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
@@ -22,26 +21,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.formniganidemo.EmptyPlaceholderScreen
-import com.example.formniganidemo.attendee.EventDetailScreen
-import com.example.formniganidemo.attendee.EventCard
-import com.example.formniganidemo.attendee.ExploreScreen
 
-// 1. ATTENDEE VIEW (Explore Events & Bottom Nav)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AttendeeMainScreen(onLogout: () -> Unit) {
     var selectedTab by remember { mutableStateOf(0) }
-    var selectedEventTitle by remember { mutableStateOf<String?>(null) }
+    var selectedEvent by remember { mutableStateOf<EventDetailData?>(null) }
     val tabs = listOf("Explore", "Saved", "History", "Profile")
 
     Scaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            if (selectedEventTitle == null) {
+            if (selectedEvent == null) {
                 NavigationBar(containerColor = Color(0xFFF8F9FA)) {
                     tabs.forEachIndexed { index, item ->
                         NavigationBarItem(
@@ -58,10 +52,10 @@ fun AttendeeMainScreen(onLogout: () -> Unit) {
                             selected = selectedTab == index,
                             onClick = {
                                 if (index == 4) {
-                                    onLogout() // Logout when clicking profile tab for testing
+                                    onLogout()
                                 } else {
                                     selectedTab = index
-                                    selectedEventTitle = null
+                                    selectedEvent = null
                                 }
                             },
                             colors = NavigationBarItemDefaults.colors(
@@ -73,18 +67,18 @@ fun AttendeeMainScreen(onLogout: () -> Unit) {
                 }
             }
         }
-    ) { innerPadding ->
-        Box() {
-            if (selectedEventTitle != null) {
+    ) {
+        Box {
+            if (selectedEvent != null) {
                 EventDetailScreen(
-                    eventTitle = selectedEventTitle!!,
-                    onBackClick = { selectedEventTitle = null }
+                    event = selectedEvent!!,
+                    onBackClick = { selectedEvent = null }
                 )
             } else {
                 when (selectedTab) {
-                    0 -> ExploreScreen(onEventClick = { title -> selectedEventTitle = title })
-                    1 -> SavedEventScreen(onEventClick = { title -> selectedEventTitle = title })
-                    2 -> HistoryScreen(onEventClick = { title -> selectedEventTitle = title })
+                    0 -> ExploreScreen(onEventClick = { clickedEvent -> selectedEvent = clickedEvent })
+                    1 -> SavedEventScreen(onEventClick = { /* TODO: map SavedEvent to EventDetailData */ })
+                    2 -> HistoryScreen(onEventClick = { /* TODO: map history item to EventDetailData */ })
                     else -> EmptyPlaceholderScreen(title = tabs[selectedTab])
                 }
             }

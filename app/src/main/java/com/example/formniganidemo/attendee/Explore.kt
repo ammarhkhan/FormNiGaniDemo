@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -71,6 +70,7 @@ data class NearbyPresetLocation(
 data class ExploreEventItem(
     val id: String = "",
     val title: String = "",
+    val description: String = "",
     val imageUri: String = "",
     val datetime: String = "",
     val location: String = "",
@@ -90,7 +90,7 @@ private fun calculateDistanceKm(origin: LatLng, targetLat: Double, targetLng: Do
 
 @Composable
 fun ExploreScreen(
-    onEventClick: (String) -> Unit,
+    onEventClick: (EventDetailData) -> Unit,
     selectedLocation: LatLng? = null,
     selectedLocationLabel: String? = null,
     radiusKm: Double = 15.0
@@ -145,6 +145,7 @@ fun ExploreScreen(
                     ExploreEventItem(
                         id = doc.getString("id") ?: doc.id,
                         title = title,
+                        description = doc.getString("description").orEmpty(),
                         imageUri = doc.getString("imageUri") ?: doc.getString("imageUrl").orEmpty(),
                         datetime = doc.getString("datetime").orEmpty(),
                         location = doc.getString("location").orEmpty(),
@@ -189,6 +190,8 @@ fun ExploreScreen(
             matchesCategory && matchesQuery
         }
     }
+
+    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     Column(
         modifier = Modifier
@@ -265,12 +268,10 @@ fun ExploreScreen(
             }
         }
 
-        val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                .padding(horizontal = 16.dp),
             contentPadding = PaddingValues(top = 4.dp, bottom = 96.dp + navBarPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -438,7 +439,21 @@ fun ExploreScreen(
                         organizer = organizerDisplay,
                         price = event.price,
                         imageUri = event.imageUri,
-                        onClick = { onEventClick(event.title) }
+                        onClick = {
+                            onEventClick(
+                                EventDetailData(
+                                    id = event.id,
+                                    title = event.title,
+                                    description = event.description,
+                                    datetime = event.datetime,
+                                    location = event.location,
+                                    organizer = event.organizer,
+                                    price = event.price,
+                                    category = event.category,
+                                    imageUri = event.imageUri
+                                )
+                            )
+                        }
                     )
                 }
             }

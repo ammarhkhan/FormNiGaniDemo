@@ -120,10 +120,11 @@ fun EventCard(
 
 @Composable
 fun EventDetailScreen(
-    eventTitle: String,
-    imageUri: String? = null,
+    event: EventDetailData,
     onBackClick: () -> Unit
 ) {
+    val deepTeal = Color(0xFF0D3B36)
+
     Scaffold(
         bottomBar = {
             Surface(
@@ -141,10 +142,15 @@ fun EventDetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D3B36)),
+                        colors = ButtonDefaults.buttonColors(containerColor = deepTeal),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("GET TICKETS (on M-Tickets)", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        val ticketLabel = if (event.price.isNotBlank()) {
+                            "GET TICKETS · ${event.price}"
+                        } else {
+                            "GET TICKETS (on M-Tickets)"
+                        }
+                        Text(ticketLabel, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 }
             }
@@ -161,19 +167,17 @@ fun EventDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 item {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        // 1. Header Image Background
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        // 1. Header Image Background from event.imageUri
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(264.dp)
-                                .background(Color(0xFF0D3B36))
+                                .background(deepTeal)
                         ) {
                             AsyncImage(
-                                model = imageUri?.takeIf { it.isNotBlank() },
-                                contentDescription = eventTitle,
+                                model = event.imageUri.takeIf { it.isNotBlank() },
+                                contentDescription = event.title,
                                 placeholder = painterResource(id = R.drawable.central_park_nairobi),
                                 error = painterResource(id = R.drawable.central_park_nairobi),
                                 fallback = painterResource(id = R.drawable.central_park_nairobi),
@@ -181,7 +185,6 @@ fun EventDetailScreen(
                                 contentScale = ContentScale.Crop
                             )
 
-                            // Dark gradient overlay
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -190,13 +193,12 @@ fun EventDetailScreen(
                                             colors = listOf(
                                                 Color.Black.copy(alpha = 0.5f),
                                                 Color.Transparent,
-                                                Color(0xFF0D3B36).copy(alpha = 0.8f)
+                                                deepTeal.copy(alpha = 0.8f)
                                             )
                                         )
                                     )
                             )
 
-                            // Back Button
                             IconButton(
                                 onClick = onBackClick,
                                 modifier = Modifier
@@ -207,7 +209,6 @@ fun EventDetailScreen(
                                 Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                             }
 
-                            // Verified Badge
                             Surface(
                                 color = Color(0xFF27AE60),
                                 shape = RoundedCornerShape(16.dp),
@@ -219,14 +220,24 @@ fun EventDetailScreen(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                 ) {
-                                    Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("VERIFIED EVENT", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                                    Text(
+                                        text = event.category.ifBlank { "VERIFIED EVENT" }.uppercase(),
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 11.sp
+                                    )
                                 }
                             }
                         }
 
-                        // 2. Overlapping White Content Sheet
+                        // 2. Overlapping Content Sheet
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -246,9 +257,18 @@ fun EventDetailScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
-                                Text(text = eventTitle, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = Color.Black)
+                                Text(
+                                    text = event.title,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 24.sp,
+                                    color = Color.Black
+                                )
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(text = "📍 Central Park Amphitheater, Nairobi", fontSize = 14.sp, color = Color.Gray)
+                                Text(
+                                    text = "📍 ${event.location.ifBlank { "Location TBA" }}",
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
 
                                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -259,37 +279,36 @@ fun EventDetailScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Column {
-                                                Text("DATE", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-                                                Text("Saturday, 26 Oct 2024", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                                            }
-                                            Column {
-                                                Text("TIME", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
-                                                Text("7:00 PM - 1:00 AM", fontSize = 13.sp, fontWeight = FontWeight.Medium)
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                Card(
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                                    elevation = CardDefaults.cardElevation(1.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Column(modifier = Modifier.padding(16.dp)) {
-                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Column {
-                                                Text("Event Description", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
                                                 Text(
-                                                    text = "Join us for an unforgettable night of electronic music featuring top DJs from across East Africa! Gates open at 6:30 PM. Licensed bar and food stalls available. 18+ event.",
+                                                    "DATE & TIME",
+                                                    fontSize = 11.sp,
+                                                    color = Color.Gray,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = event.datetime.ifBlank { "TBA" },
                                                     fontSize = 13.sp,
-                                                    fontWeight = FontWeight.Medium,
-                                                    lineHeight = 20.sp
-                                                )                                            }
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
+                                            Column(horizontalAlignment = Alignment.End) {
+                                                Text(
+                                                    "PRICE",
+                                                    fontSize = 11.sp,
+                                                    color = Color.Gray,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Text(
+                                                    text = event.price.ifBlank { "TBA" },
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -303,18 +322,37 @@ fun EventDetailScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Column(modifier = Modifier.padding(16.dp)) {
-                                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                            Column {
-                                                Text("Lineup Highlights", fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Column(modifier = Modifier.weight(1f)) {
                                                 Text(
-                                                    text = "DJ Khaligraph, Nviiri The Storyteller, Bensoul, Fena Gitu, Ayrosh",
+                                                    "Event Description",
+                                                    fontSize = 11.sp,
+                                                    color = Color.Gray,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = event.description.ifBlank { "No description provided for this event." },
                                                     fontSize = 13.sp,
-                                                    fontWeight = FontWeight.Medium,
-                                                    lineHeight = 20.sp
-                                                )                                            }
+                                                    fontWeight = FontWeight.Medium
+                                                )
+                                            }
                                         }
                                     }
                                 }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                //Todo: Add organizer info
+//                                if (event.organizer.isNotBlank()) {
+//                                    Spacer(modifier = Modifier.height(16.dp))
+//                                    Text("Organizer", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+//                                    Spacer(modifier = Modifier.height(4.dp))
+//                                    Text(text = event.organizer, fontSize = 14.sp, color = Color.Gray)
+//                                }
 
                                 Spacer(modifier = Modifier.height(40.dp))
                             }

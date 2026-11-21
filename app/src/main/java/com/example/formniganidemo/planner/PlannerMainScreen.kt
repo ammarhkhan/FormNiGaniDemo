@@ -79,10 +79,10 @@ fun PlannerMainScreen(onLogout: () -> Unit) {
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             if (selectedEventTitle != null) {
-                EventDetailScreen(
-                    eventTitle = selectedEventTitle!!,
-                    onBackClick = { selectedEventTitle = null }
-                )
+//                EventDetailScreen(
+//                    eventTitle = selectedEventTitle!!,
+//                    onBackClick = { selectedEventTitle = null }
+//                )
             } else if(selectedVendorName != null) {
                 VendorProfileScreen(
                     vendorName = selectedVendorName!!,
