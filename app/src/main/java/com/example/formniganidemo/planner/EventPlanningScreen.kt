@@ -43,12 +43,18 @@ fun EventPlanningScreen() {
     val storageRef = FirebaseStorage.getInstance().reference
     val placesClient = remember { Places.createClient(context) }
 
+    val deepTeal = Color(0xFF0D3B36)
+    val categories = remember {
+        listOf("Music", "Festivals", "Professional", "Art", "Social", "Sports")
+    }
+
     // Form Field States
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var datetime by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Music") }
+    var category by remember { mutableStateOf(categories.first()) }
+    var isCategoryExpanded by remember { mutableStateOf(false) }
 
     // Location Search States
     var locationInput by remember { mutableStateOf("") }
@@ -135,7 +141,6 @@ fun EventPlanningScreen() {
                     isLoading = false
                     val msg = if (status == "draft") "Draft saved successfully!" else "Event published successfully!"
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    //onEventSaved()
                 }
                 .addOnFailureListener { e ->
                     isLoading = false
@@ -173,7 +178,7 @@ fun EventPlanningScreen() {
             text = "Create Event",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF0D3B36)
+            color = deepTeal
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -197,9 +202,9 @@ fun EventPlanningScreen() {
                 )
             } else {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.AddAPhoto, contentDescription = null, tint = Color(0xFF0D3B36), modifier = Modifier.size(36.dp))
+                    Icon(Icons.Default.AddAPhoto, contentDescription = null, tint = deepTeal, modifier = Modifier.size(36.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Tap to upload event poster/photo", color = Color(0xFF0D3B36), fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                    Text("Tap to upload event poster/photo", color = deepTeal, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                 }
             }
         }
@@ -216,6 +221,45 @@ fun EventPlanningScreen() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Category Dropdown Field
+        ExposedDropdownMenuBox(
+            expanded = isCategoryExpanded,
+            onExpandedChange = { isCategoryExpanded = !isCategoryExpanded },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = category,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Category") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = isCategoryExpanded)
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+            )
+
+            ExposedDropdownMenu(
+                expanded = isCategoryExpanded,
+                onDismissRequest = { isCategoryExpanded = false }
+            ) {
+                categories.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            category = option
+                            isCategoryExpanded = false
+                        },
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // Live Search Location Field with Dropdown Suggestions
         Column(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
@@ -227,7 +271,7 @@ fun EventPlanningScreen() {
                 label = { Text("Event Location / Venue") },
                 placeholder = { Text("Type venue name (e.g., KICC)") },
                 leadingIcon = {
-                    Icon(Icons.Default.LocationOn, contentDescription = "Location", tint = Color(0xFF0D3B36))
+                    Icon(Icons.Default.LocationOn, contentDescription = "Location", tint = deepTeal)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
@@ -257,7 +301,7 @@ fun EventPlanningScreen() {
                                     .fillMaxWidth()
                                     .clickable { selectPlace(prediction) }
                             )
-                            Divider(color = Color.LightGray.copy(alpha = 0.2f))
+                            HorizontalDivider(color = Color.LightGray.copy(alpha = 0.2f))
                         }
                     }
                 }
@@ -308,13 +352,13 @@ fun EventPlanningScreen() {
                 shape = RoundedCornerShape(12.dp),
                 enabled = !isLoading
             ) {
-                Text("Save Draft", color = Color(0xFF0D3B36), fontWeight = FontWeight.Bold)
+                Text("Save Draft", color = deepTeal, fontWeight = FontWeight.Bold)
             }
 
             Button(
                 onClick = { submitEvent("published") },
                 modifier = Modifier.weight(1f).height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0D3B36)),
+                colors = ButtonDefaults.buttonColors(containerColor = deepTeal),
                 shape = RoundedCornerShape(12.dp),
                 enabled = !isLoading
             ) {
