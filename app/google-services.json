@@ -7,6 +7,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:610832098605:android:37cc83a1bde5505bad9fa4",
+        "android_client_info": {
+          "package_name": "com.demo.formnigani"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "610832098605-1k753b33ilea303f3bqi04ts3jqaupgq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWNf7P_taMbhRFCoMBduMmepKRvvLA2VY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "610832098605-1k753b33ilea303f3bqi04ts3jqaupgq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:610832098605:android:e0b0f77e67065cadad9fa4",
         "android_client_info": {
           "package_name": "com.example.formniganidemo"

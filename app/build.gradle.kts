@@ -5,13 +5,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.formniganidemo"
+    namespace = "com.demo.formnigani"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.example.formniganidemo"
+        applicationId = "com.demo.formnigani"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
