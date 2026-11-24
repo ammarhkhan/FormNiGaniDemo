@@ -34,6 +34,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
+import androidx.activity.compose.BackHandler
+import androidx.compose.runtime.LaunchedEffect
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -124,6 +126,17 @@ fun RootNavigation() {
         destination = ActiveDestination.Auth
     }
 
+    // Automatically restore an active Firebase Auth session on app launch
+    LaunchedEffect(Unit) {
+        val currentUser = auth.currentUser
+        if (currentUser != null && destination is ActiveDestination.Auth) {
+            loadUserRoles(currentUser.uid) { loadedRoles ->
+                userRoles = loadedRoles
+                destination = routeForRoles(loadedRoles)
+            }
+        }
+    }
+
     if (isFetchingProfile) {
         Box(
             modifier = Modifier
@@ -164,35 +177,53 @@ fun RootNavigation() {
             onLogout = ::handleLogout
         )
 
-        is ActiveDestination.Attendee -> AttendeeMainScreen(
-            onLogout = {
-                if (current.canSwitchRole && userRoles.size > 1) {
-                    destination = ActiveDestination.RoleLanding(userRoles)
-                } else {
-                    handleLogout()
-                }
+        is ActiveDestination.Attendee -> {
+            val canGoToRolePicker = current.canSwitchRole && userRoles.size > 1
+            BackHandler(enabled = canGoToRolePicker) {
+                destination = ActiveDestination.RoleLanding(userRoles)
             }
-        )
+            AttendeeMainScreen(
+                onLogout = {
+                    if (canGoToRolePicker) {
+                        destination = ActiveDestination.RoleLanding(userRoles)
+                    } else {
+                        handleLogout()
+                    }
+                }
+            )
+        }
 
-        is ActiveDestination.Planner -> PlannerMainScreen(
-            onLogout = {
-                if (current.canSwitchRole && userRoles.size > 1) {
-                    destination = ActiveDestination.RoleLanding(userRoles)
-                } else {
-                    handleLogout()
-                }
+        is ActiveDestination.Planner -> {
+            val canGoToRolePicker = current.canSwitchRole && userRoles.size > 1
+            BackHandler(enabled = canGoToRolePicker) {
+                destination = ActiveDestination.RoleLanding(userRoles)
             }
-        )
+            PlannerMainScreen(
+                onLogout = {
+                    if (canGoToRolePicker) {
+                        destination = ActiveDestination.RoleLanding(userRoles)
+                    } else {
+                        handleLogout()
+                    }
+                }
+            )
+        }
 
-        is ActiveDestination.ServiceProvider -> ServiceProviderMainScreen(
-            onLogout = {
-                if (current.canSwitchRole && userRoles.size > 1) {
-                    destination = ActiveDestination.RoleLanding(userRoles)
-                } else {
-                    handleLogout()
-                }
+        is ActiveDestination.ServiceProvider -> {
+            val canGoToRolePicker = current.canSwitchRole && userRoles.size > 1
+            BackHandler(enabled = canGoToRolePicker) {
+                destination = ActiveDestination.RoleLanding(userRoles)
             }
-        )
+            ServiceProviderMainScreen(
+                onLogout = {
+                    if (canGoToRolePicker) {
+                        destination = ActiveDestination.RoleLanding(userRoles)
+                    } else {
+                        handleLogout()
+                    }
+                }
+            )
+        }
     }
 }
 
