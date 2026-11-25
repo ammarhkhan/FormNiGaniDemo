@@ -3,6 +3,7 @@ package com.demo.formnigani
 import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -26,16 +27,16 @@ import androidx.credentials.exceptions.GetCredentialException
 import com.demo.formnigani.attendee.AttendeeMainScreen
 import com.demo.formnigani.planner.PlannerMainScreen
 import com.demo.formnigani.serviceprovider.ServiceProviderMainScreen
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.places.api.Places
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.launch
-import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.LaunchedEffect
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -366,30 +367,28 @@ fun LoginScreen(
         }
     }
 
-    fun persistUserDoc(uid: String, emailAddr: String, handle: String, roles: List<ProfileType>, mergeIfExists: Boolean, onDone: () -> Unit) {
+    fun persistUserDoc(
+        uid: String,
+        emailAddr: String,
+        handle: String,
+        roles: List<ProfileType>,
+        mergeIfExists: Boolean,
+        onDone: () -> Unit
+    ) {
         val data = hashMapOf<String, Any>(
             "uid" to uid,
             "email" to emailAddr,
             "username" to handle.ifBlank { emailAddr.substringBefore("@") },
             "roles" to roles.map { it.key },
-            "updatedAt" to com.google.firebase.Timestamp.now()
+            "updatedAt" to Timestamp.now()
         )
         val docRef = db.collection("users").document(uid)
-        if (mergeIfExists) {
-            docRef.set(data, com.google.firebase.firestore.SetOptions.merge())
-                .addOnSuccessListener { onDone() }
-                .addOnFailureListener { e ->
-                    isLoading = false
-                    errorMessage = e.localizedMessage ?: "Failed to save profile"
-                }
-        } else {
-            docRef.set(data)
-                .addOnSuccessListener { onDone() }
-                .addOnFailureListener { e ->
-                    isLoading = false
-                    errorMessage = e.localizedMessage ?: "Failed to save profile"
-                }
-        }
+        val task = if (mergeIfExists) docRef.set(data, SetOptions.merge()) else docRef.set(data)
+        task.addOnSuccessListener { onDone() }
+            .addOnFailureListener { e ->
+                isLoading = false
+                errorMessage = e.localizedMessage ?: "Failed to save profile"
+            }
     }
 
     fun signInWithFirebaseCredential(credential: AuthCredential, googleEmail: String?, googleName: String?) {
@@ -406,7 +405,6 @@ fun LoginScreen(
                 val docRef = db.collection("users").document(user.uid)
                 docRef.get().addOnSuccessListener { snap ->
                     if (!snap.exists()) {
-                        // First-time Google user: save chosen roles (defaults to Attendee if none toggled)
                         val rolesToSave = selectedRoles.toList().ifEmpty { listOf(ProfileType.ATTENDEE) }
                         persistUserDoc(
                             uid = user.uid,
@@ -440,7 +438,7 @@ fun LoginScreen(
             context.packageName
         )
         if (webClientIdResId == 0) {
-            errorMessage = "Missing default_web_client_id in strings.xml (check google-services.json)."
+            errorMessage = "Missing default_web_client_id (enable Google Sign-In in Firebase & rebuild)."
             return
         }
         val webClientId = context.getString(webClientIdResId)
@@ -449,13 +447,11 @@ fun LoginScreen(
             isLoading = true
             errorMessage = ""
             try {
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    .setServerClientId(webClientId)
+                val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(webClientId)
                     .build()
 
                 val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
+                    .addCredentialOption(signInWithGoogleOption)
                     .build()
 
                 val response = credentialManager.getCredential(

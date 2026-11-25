@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "610832098605-d3jdk7qohv32p2e520hqnooq9esl7coe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.demo.formnigani",
+            "certificate_hash": "30a2b7d308b8ff3874ad971e2d9ab4229a15bd49"
+          }
+        },
+        {
           "client_id": "610832098605-1k753b33ilea303f3bqi04ts3jqaupgq.apps.googleusercontent.com",
           "client_type": 3
         }
